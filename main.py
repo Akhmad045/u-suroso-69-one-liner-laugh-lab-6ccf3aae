@@ -33,11 +33,23 @@ def validate(line: str) -> None:
         raise ValueError("line must be a single line")
 
 
+def verify_written(path: str, expected: str) -> None:
+    """Read the written file back and check it round-trips exactly."""
+    with open(path, "rb") as f:
+        raw = f.read()
+    decoded = raw.decode("utf-8")  # raises on invalid UTF-8
+    if decoded != expected + "\n":
+        raise ValueError("written file does not match the line exactly")
+    if len(decoded.rstrip("\n")) > MAX_CHARS:
+        raise ValueError("written line exceeds the character limit")
+
+
 def main() -> None:
     validate(LINE)
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         f.write(LINE + "\n")
+    verify_written(OUTPUT_PATH, LINE)
     print(f"wrote {len(LINE)} characters to {OUTPUT_PATH}")
 
 
